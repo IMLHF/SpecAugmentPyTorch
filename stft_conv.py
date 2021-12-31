@@ -1,4 +1,5 @@
 # this stft&istft is consistent with torch.stft&torch.istft
+# lihongfeng3@xiaomi.com 2021.12.31
 
 import torch as th
 import torch.nn.functional as F
