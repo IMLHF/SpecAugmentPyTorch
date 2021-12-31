@@ -78,11 +78,12 @@ def time_warp(specs, W=50):
   # Uniform distribution from (0,W) with chance to be up to W negative
   # warp_d = torch.randn(1)*W # Not using this since the paper author make random number with uniform distribution
   warp_d = torch.randint(-W, W, (batch_size,), device=device)
-  print("warp_d", warp_d)
+  # print("warp_d", warp_d)
   x = torch.stack([torch.tensor([0], device=device).expand(batch_size),
                    warp_p, torch.tensor([spec_len-1], device=device).expand(batch_size)], 1)
   y = torch.stack([torch.tensor([-1.], device=device).expand(batch_size),
-                   (warp_p-warp_d)*2/(spec_len-1)-1, torch.tensor([1], device=device).expand(batch_size)], 1)
+                   (warp_p-warp_d)*2/(spec_len-1.)-1., torch.tensor([1.], device=device).expand(batch_size)], 1)
+  # print((warp_p-warp_d)*2/(spec_len-1.)-1.)
 
   # Interpolate from 3 points to spec_len
   xs = torch.linspace(0, spec_len-1, spec_len, device=device).unsqueeze(0).expand(batch_size, -1)
