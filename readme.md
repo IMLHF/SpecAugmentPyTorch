@@ -20,7 +20,6 @@ visualization_spectrogram(complex_stft_aug[0][0], "blabla")
 ```
 
 run command `python spec_augment_pytorch.py` to generate examples (processed wav and visual spectrogram).
-In test code, we using one of the [LibriSpeech dataset](http://www.openslr.org/12/).
 
 <p align="center">
   <img src="./001and002_spectrogram_plot.png" alt="Example result of base spectrogram"/ width=600>
