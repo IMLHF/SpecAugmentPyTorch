@@ -24,7 +24,6 @@ In test code, we using one of the [LibriSpeech dataset](http://www.openslr.org/1
 
 <p align="center">
   <img src="./001and002_spectrogram_plot.png" alt="Example result of base spectrogram"/ width=600>
-  <img src="./001and002_spectrogram_plot.png" alt="Example result of base spectrogram"/ width=600>
 </p>
 
 
