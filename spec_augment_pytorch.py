@@ -28,11 +28,11 @@ reference:
 import torch
 import random
 import librosa
+import matplotlib
 import numpy as np
 import librosa.display
 import matplotlib.pyplot as plt
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def h_poly(t):
     tt = t.unsqueeze(-2)**torch.arange(4, device=t.device).view(-1,1)
@@ -51,12 +51,19 @@ def hspline_interpolate_1D(x, y, xs):
     m = (y[..., 1:] - y[..., :-1]) / (x[..., 1:] - x[..., :-1])
     m = torch.cat([m[...,[0]], (m[...,1:] + m[...,:-1]) / 2, m[...,[-1]]], -1)
     idxs = torch.searchsorted(x[..., 1:], xs)
-    dx = (x.take_along_dim(idxs+1, dim=-1) - x.take_along_dim(idxs, dim=-1))
-    hh = h_poly((xs - x.take_along_dim(idxs, dim=-1)) / dx)
-    return hh[...,0,:] * y.take_along_dim(idxs, dim=-1) \
-        + hh[...,1,:] * m.take_along_dim(idxs, dim=-1) * dx \
-        + hh[...,2,:] * y.take_along_dim(idxs+1, dim=-1) \
-        + hh[...,3,:] * m.take_along_dim(idxs+1, dim=-1) * dx
+    # print(torch.abs(x.take_along_dim(idxs+1, dim=-1) - x.gather(dim=-1, index=idxs+1)))
+    dx = (x.gather(dim=-1, index=idxs+1) - x.gather(dim=-1, index=idxs))
+    hh = h_poly((xs - x.gather(dim=-1, index=idxs)) / dx)
+    return hh[...,0,:] * y.gather(dim=-1, index=idxs) \
+        + hh[...,1,:] * m.gather(dim=-1, index=idxs) * dx \
+        + hh[...,2,:] * y.gather(dim=-1, index=idxs+1) \
+        + hh[...,3,:] * m.gather(dim=-1, index=idxs+1) * dx
+    # dx = (x.take_along_dim(idxs+1, dim=-1) - x.take_along_dim(idxs, dim=-1))
+    # hh = h_poly((xs - x.take_along_dim(idxs, dim=-1)) / dx)
+    # return hh[...,0,:] * y.take_along_dim(idxs, dim=-1) \
+    #     + hh[...,1,:] * m.take_along_dim(idxs, dim=-1) * dx \
+    #     + hh[...,2,:] * y.take_along_dim(idxs+1, dim=-1) \
+    #     + hh[...,3,:] * m.take_along_dim(idxs+1, dim=-1) * dx
 
 def time_warp(specs, W=50):
   '''

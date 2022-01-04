@@ -3,7 +3,7 @@ An implementation of SpecAugment for Pytorch
 
 ## How to use
 
-Install pytorch, version>=1.9.0 (new feature (torch.Tensor.take_along_dim) is used.).
+Install pytorch (version==1.6.0 is used for testing).
 
 
 ```python
