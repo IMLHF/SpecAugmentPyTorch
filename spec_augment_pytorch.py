@@ -28,7 +28,6 @@ reference:
 import torch
 import random
 import librosa
-import matplotlib
 import numpy as np
 import librosa.display
 import matplotlib.pyplot as plt
@@ -69,9 +68,6 @@ def time_warp(specs, W=50):
   '''
   device = specs.device
   batch_size, _, num_rows, spec_len = specs.shape
-
-  mid_y = num_rows//2
-  mid_x = spec_len//2
 
   warp_p = torch.randint(W, spec_len - W, (batch_size,), device=device)
 
