@@ -188,14 +188,21 @@ class SpecAugmentTorch(torch.nn.Module):
       specaug_batch = torch.cat(specaug_lst, dim=0)
       return specaug_batch
 
+class N2FT_TO_MAG(torch.nn.Module):
+  def __init__(self):
+    super().__init__()
+
+  def forward(self, n2ft):
+    # n2ft: [N, 2, F, T]
+    real, imag = n2ft[:, 0, :, :], n2ft[:, 1, :, :]
+    mags = torch.sqrt(real**2+imag**2)
+    return mags #[N, F, T]
 
 if __name__ == "__main__":
   p = {'W':40, 'F':19, 'mF':2, 'T':100, 'p':1.0, 'mT':2, 'batch':False}
-  m = SpecAugmentTorch(**p)
-  import stft_conv
-  stft_fn = stft_conv.ConvSTFT(512, 160, 512)
-  istft_fn = stft_conv.ConvISTFT(512, 160, 512)
-  n2ft_to_mag = stft_conv.N2FT_TO_MAG()
+  aug_fn = SpecAugmentTorch(**p)
+  n2ft_to_mag = N2FT_TO_MAG()
+
   import soundfile as sf
   wav1, sr = sf.read("./examples/1089-0001.flac")
   wav2, sr = sf.read("./examples/1089-0002.flac")
@@ -206,19 +213,21 @@ if __name__ == "__main__":
   print(wav1.dtype)
   print(wav1.shape, wav2.shape)
   wav = torch.from_numpy(np.stack([wav1, wav2]))
-  spec = stft_fn(wav)
-  print(spec.shape)
-  spec_aug = m(spec)
-  wav_aug = istft_fn.forward(spec_aug, wav.shape[-1])
+  spec = torch.stft(wav, 512, 160, 512, torch.hann_window(512)).permute(0, 3, 1, 2) # [N, 2, F, T]
+  print(spec.shape) # [N, 2, F, T]
+
+  spec_aug = aug_fn(spec)
+
+  wav_aug = torch.istft(spec_aug.permute(0, 2, 3, 1), 512, 160, 512, torch.hann_window(512), length=wav.shape[-1])
   sf.write("./examples/1089-0001-SpecAug.flac", wav_aug[0], sr)
   sf.write("./examples/1089-0002-SpecAug.flac", wav_aug[1], sr)
+
   mag = n2ft_to_mag(spec)
   mag_aug = n2ft_to_mag(spec_aug)
-  # cated_mag = torch.cat([mag[0], mag_aug[0], mag[1], mag_aug[1]])
+
   visualization_spectrogram(mag[0],"1089-0001")
   visualization_spectrogram(mag_aug[0],"1089-0001-SpecAug")
   visualization_spectrogram(mag[1],"1089-0002")
   visualization_spectrogram(mag_aug[1],"1089-0002-SpecAug")
-  # visualization_spectrogram(mag_aug[0],"0")
-  # visualization_spectrogram(mag_aug[1],"0")
+
 
