@@ -150,12 +150,15 @@ def visualization_spectrogram(mel_spectrogram, title):
       title(String): plot figure's title
     """
     # Show mel-spectrogram using librosa's specshow.
-    plt.figure(figsize=(10, 6))
-    # librosa.power_to_db(mel_spectrogram[ :, :], ref=np.max)
-    librosa.display.specshow(np.log(mel_spectrogram.numpy()+0.5), y_axis='mel', x_axis='time')
+    plt.figure(figsize=(10, 3))
+    # plt_d = librosa.power_to_db(mel_spectrogram[ :, :], ref=np.max)
+    plt_d = np.log(mel_spectrogram.numpy()+0.05)
+    plt_d = plt_d - plt_d.min()
+    librosa.display.specshow(plt_d, y_axis='mel', x_axis='time')
     # plt.colorbar(format='%+2.0f dB')
     plt.title(title)
     plt.tight_layout()
+    plt.savefig("./examples/"+title)
     plt.show()
     plt.close()
 
@@ -187,30 +190,35 @@ class SpecAugmentTorch(torch.nn.Module):
 
 
 if __name__ == "__main__":
-  p = {'W':40, 'F':29, 'mF':2, 'T':50, 'p':1.0, 'mT':2, 'batch':False}
+  p = {'W':40, 'F':19, 'mF':2, 'T':100, 'p':1.0, 'mT':2, 'batch':False}
   m = SpecAugmentTorch(**p)
   import stft_conv
-  stft_fn = stft_conv.ConvSTFT()
-  istft_fn = stft_conv.ConvISTFT()
+  stft_fn = stft_conv.ConvSTFT(512, 160, 512)
+  istft_fn = stft_conv.ConvISTFT(512, 160, 512)
   n2ft_to_mag = stft_conv.N2FT_TO_MAG()
   import soundfile as sf
-  wav1, sr = sf.read("./1089-0001.flac")
-  wav2, sr = sf.read("./1089-0002.flac")
-  wav1 = wav1[:len(wav2)]
+  wav1, sr = sf.read("./examples/1089-0001.flac")
+  wav2, sr = sf.read("./examples/1089-0002.flac")
+  # wav1 = wav1[:len(wav2)]
+  # sf.write("./examples/1089-0001.flac", wav1, sr)
   wav1 = wav1.astype(np.float32)
   wav2 = wav2.astype(np.float32)
   print(wav1.dtype)
   print(wav1.shape, wav2.shape)
   wav = torch.from_numpy(np.stack([wav1, wav2]))
   spec = stft_fn(wav)
+  print(spec.shape)
   spec_aug = m(spec)
   wav_aug = istft_fn.forward(spec_aug, wav.shape[-1])
-  sf.write("001.flac", wav_aug[0], sr)
-  sf.write("002.flac", wav_aug[1], sr)
+  sf.write("./examples/1089-0001-SpecAug.flac", wav_aug[0], sr)
+  sf.write("./examples/1089-0002-SpecAug.flac", wav_aug[1], sr)
   mag = n2ft_to_mag(spec)
   mag_aug = n2ft_to_mag(spec_aug)
-  cated_mag = torch.cat([mag[0], mag_aug[0], mag[1], mag_aug[1]])
-  visualization_spectrogram(cated_mag,"cated")
+  # cated_mag = torch.cat([mag[0], mag_aug[0], mag[1], mag_aug[1]])
+  visualization_spectrogram(mag[0],"1089-0001")
+  visualization_spectrogram(mag_aug[0],"1089-0001-SpecAug")
+  visualization_spectrogram(mag[1],"1089-0002")
+  visualization_spectrogram(mag_aug[1],"1089-0002-SpecAug")
   # visualization_spectrogram(mag_aug[0],"0")
   # visualization_spectrogram(mag_aug[1],"0")
 

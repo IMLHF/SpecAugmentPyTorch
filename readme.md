@@ -22,7 +22,10 @@ visualization_spectrogram(complex_stft_aug[0][0], "blabla")
 run command `python spec_augment_pytorch.py` to generate examples (processed wav and visual spectrogram).
 
 <p align="center">
-  <img src="./001and002_spectrogram_plot.png" alt="Example result of base spectrogram"/ width=600>
+  <img src="./examples/1089-0001.png" alt="1089-0001: spectrogram"/ width=600>
+  <img src="./examples/1089-0001-SpecAug.png" alt="1089-0001-SpecAug: augmented spectrogram"/ width=600>
+  <img src="./examples/1089-0002.png" alt="1089-0002: spectrogram"/ width=600>
+  <img src="./examples/1089-0002-SpecAug.png" alt="1089-0002-SpecAug: augmented spectrogram"/ width=600>
 </p>
 
 
